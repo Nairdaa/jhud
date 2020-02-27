@@ -67,12 +67,12 @@ public void OnPluginStart()
 	g_hCookieDefault = RegClientCookie("jhud_default", "jhud_default", CookieAccess_Public);
 	g_hCookieDefaultColour = RegClientCookie("colour_default", "colour_default", CookieAccess_Public);
 	
-	for(int i = 1; i <= MaxClients; i++)
+	for(int iClient = 1; iClient <= MaxClients; iClient++)
 	{
-		if(IsClientInGame(i))
+		if(IsClientInGame(iClient))
 		{
-			OnClientPutInServer(i);
-			OnClientCookiesCached(i);
+			OnClientPutInServer(iClient);
+			OnClientCookiesCached(iClient);
 		}
 	}
 	hText = CreateHudSynchronizer();
@@ -286,11 +286,11 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 	
 	g_iJump[client] = Shavit_GetClientJumps(client); 
 	
-	for (int i = 1; i <= MaxClients; i++)
+	for (int iClient = 1; iClient <= MaxClients; iClient++)
 	{
-		if(IsClientInGame(i) && !IsFakeClient(i) && ((!IsPlayerAlive(i) && GetEntPropEnt(i, Prop_Data, "m_hObserverTarget") == client && GetEntProp(i, Prop_Data, "m_iObserverMode") != 7 && g_bEnabled[i]) || (i == client && g_bEnabled[i])))
+		if(IsClientInGame(iClient) && !IsFakeClient(iClient) && ((!IsPlayerAlive(iClient) && GetEntPropEnt(iClient, Prop_Data, "m_hObserverTarget") == client && GetEntProp(iClient, Prop_Data, "m_iObserverMode") != 7 && g_bEnabled[iClient]) || (iClient == client && g_bEnabled[iClient])))
 		{
-			JHUD_Print(i, client);
+			JHUD_Print(iClient, client);
 		}
 	}
 	g_flRawGain[client] = 0.0;
