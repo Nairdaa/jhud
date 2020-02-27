@@ -9,7 +9,7 @@
 #pragma newdecls required
 
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Fixed by Nairda tho."
-#define PLUGIN_VERSION "1.11"
+#define PLUGIN_VERSION "1.2"
 #define BHOP_TIME 15
 
 EngineVersion g_Game;
@@ -41,7 +41,6 @@ public Plugin myinfo =
 	description = "SSJ in Hud",
 	author = PLUGIN_AUTHOR,
 	version = PLUGIN_VERSION,
-	url = "https://steamcommunity.com/profiles/76561198075677363/"
 };
 
 public void OnAllPluginsLoaded()
