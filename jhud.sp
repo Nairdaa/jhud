@@ -9,7 +9,7 @@
 #pragma newdecls required
 
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Fixed by Nairda tho."
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.2b"
 #define BHOP_TIME 15
 
 EngineVersion g_Game;
@@ -45,27 +45,26 @@ public Plugin myinfo =
 
 public void OnAllPluginsLoaded()
 {
-
 	HookEvent("player_jump", OnPlayerJump);
 }
 
 public void OnPluginStart()
 {	
 	g_Game = GetEngineVersion();
+	
 	if(g_Game != Engine_CSGO && g_Game != Engine_CSS)
 	{
 		SetFailState("This plugin is for CSGO/CSS only.");	
 	}
 	
 	RegConsoleCmd("sm_jhud", SM_JHUD, "opens Jhud");
-	
 	g_hCookieEnabled = RegClientCookie("jhud_enabled", "jhud_enabled", CookieAccess_Public);
 	g_hCookieSpeed = RegClientCookie("speed_enabled", "speed_enabled", CookieAccess_Public);
 	g_hCookieGain = RegClientCookie("gain_enabled", "gain_enabled", CookieAccess_Public);
 	g_hCookieDisplayMode = RegClientCookie("usagemode", "usagemode", CookieAccess_Public);
 	g_hCookieDefault = RegClientCookie("jhud_default", "jhud_default", CookieAccess_Public);
 	g_hCookieDefaultColour = RegClientCookie("colour_default", "colour_default", CookieAccess_Public);
-	
+
 	for(int iClient = 1; iClient <= MaxClients; iClient++)
 	{
 		if(IsClientInGame(iClient))
@@ -74,13 +73,13 @@ public void OnPluginStart()
 			OnClientCookiesCached(iClient);
 		}
 	}
+
 	hText = CreateHudSynchronizer();
 }
 
 public void OnClientCookiesCached(int client)
 {	
 	char sCookie[4];
-	
 	GetClientCookie(client, g_hCookieDefault, sCookie, sizeof(sCookie));
 	
 	if(StringToInt(sCookie) == 0)
@@ -90,7 +89,6 @@ public void OnClientCookiesCached(int client)
 		SetCookie(client, g_hCookieGain, false);
 		SetCookie(client, g_hCookieDisplayMode, 0);
 		SetCookie(client, g_hCookieDefaultColour, true);
-		
 		SetCookie(client, g_hCookieDefault, true);
 	}
 	
@@ -104,7 +102,7 @@ public void OnClientCookiesCached(int client)
 
 public void OnClientPutInServer(int client)
 {
-	g_iJump[client] = Shavit_GetClientJumps(client); 
+	g_iJump[client] = 0; 
 	g_strafeTick[client] = 0;
 	g_flRawGain[client] = 0.0;
 	g_iTicksOnGround[client] = 0;
@@ -125,11 +123,11 @@ public Action SM_JHUD(int client, int args)
 		ReplyToCommand(client, "[SM] This command can only used ingame");
 		return Plugin_Handled;
 	}
+
 	else
 	{
 		JhudMenu(client);
 	}
-
 	return Plugin_Handled;
 }
 
@@ -139,12 +137,11 @@ void JhudMenu(int client)
 	Panel panel = CreatePanel(); // panel cuz menu has no drawtext, and preview with numbers? hell na
 	
 	panel.SetTitle("Jhud Menu");
-	
 	panel.DrawText(" ");
 	
 	FormatEx(sBuffer, sizeof(sBuffer), "Jhud - [%s]", (g_bEnabled[client]) ? "x" : " ");
+
 	panel.DrawItem(sBuffer);
-	
 	panel.DrawText(" ");
 	
 	//Display Mode preview
@@ -152,14 +149,17 @@ void JhudMenu(int client)
 	{
 		FormatEx(sBuffer, sizeof(sBuffer), "jump: ssj");
 	}
+
 	else if(g_iDisplayMode[client] == 1)
 	{
 		FormatEx(sBuffer, sizeof(sBuffer), "jump: gain %");
 	}
+
 	else if(g_iDisplayMode[client] == 2)
 	{
 		FormatEx(sBuffer, sizeof(sBuffer), "jump: ssj - gain %");
 	}
+
 	panel.DrawText(sBuffer);
 	
 	FormatEx(sBuffer, sizeof(sBuffer), "%s", g_iDisplayMode[client] == 0 ? "Mode: default" : (g_iDisplayMode[client] == 1 ? "Mode: gain" : "Mode: vel-gain"));
@@ -200,12 +200,14 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 					SetCookie(client, g_hCookieEnabled, g_bEnabled[client]);
 					JhudMenu(client);
 				}
+
 				case 2: //switch modes
 				{
 					g_iDisplayMode[client] = (g_iDisplayMode[client] + 1) % 3;
 					SetCookie(client, g_hCookieDisplayMode, g_iDisplayMode[client]);
 					JhudMenu(client);
 				}
+
 				case 3:
 				{
 					if(g_bGainColour[client] || g_bSpeedColour[client])
@@ -219,8 +221,10 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 						SetCookie(client, g_hCookieDefaultColour, g_bDefaultColour[client]);
 						
 					}
+
 					JhudMenu(client);
 				}
+
 				case 4:
 				{
 					if(g_bGainColour[client] || g_bDefaultColour[client])
@@ -234,8 +238,10 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 						SetCookie(client, g_hCookieSpeed, g_bSpeedColour[client]);
 						
 					}
+
 					JhudMenu(client);
 				}
+
 				case 5:
 				{
 					if(g_bSpeedColour[client] || g_bDefaultColour[client])
@@ -249,6 +255,7 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 						SetCookie(client, g_hCookieGain, g_bGainColour[client]);
 						
 					}
+
 					JhudMenu(client);
 				}
 			}
@@ -268,23 +275,29 @@ public Action onTouch(int client, int entity)
 		SOLID_VPHYSICS = 6, // solid vphysics object, get vcollide from the model and collide with that
 	*/
 	
-	if(!(GetEntProp(entity, Prop_Data, "m_usSolidFlags") & 28))	
+	if(!(GetEntProp(entity, Prop_Data, "m_usSolidFlags") & 28))
+	{
 		g_bTouchesWall[client] = true;
+	}
 }
 
 public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 {
 	int userid = GetEventInt(event, "userid");
 	int client = GetClientOfUserId(userid);
-	
+
 	if(!IsValidClientIndex(client) || IsFakeClient(client))
+	{
 		return;
-	
+	}
+
 	if(g_iJump[client] && g_strafeTick[client] <= 0)
+	{
 		return;
-	
+	}
+
 	g_iJump[client] = Shavit_GetClientJumps(client); 
-	
+
 	for (int iClient = 1; iClient <= MaxClients; iClient++)
 	{
 		if(IsClientInGame(iClient) && !IsFakeClient(iClient) && ((!IsPlayerAlive(iClient) && GetEntPropEnt(iClient, Prop_Data, "m_hObserverTarget") == client && GetEntProp(iClient, Prop_Data, "m_iObserverMode") != 7 && g_bEnabled[iClient]) || (iClient == client && g_bEnabled[iClient])))
@@ -292,6 +305,7 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 			JHUD_Print(iClient, client);
 		}
 	}
+
 	g_flRawGain[client] = 0.0;
 	g_strafeTick[client] = 0;
 }
@@ -320,17 +334,20 @@ void JHUD_Get(int client, float vel[3], float angles[3])
 	
 	wishspeed = NormalizeVector(wishvel, wishdir);
 	if(wishspeed > GetEntPropFloat(client, Prop_Send, "m_flMaxspeed") && GetEntPropFloat(client, Prop_Send, "m_flMaxspeed") != 0.0)
+	{
 		wishspeed = GetEntPropFloat(client, Prop_Send, "m_flMaxspeed");
+	}
 	
 	if(wishspeed)
 	{
 		wishspd = (wishspeed > 30.0) ? 30.0 : wishspeed;
-		
 		currentgain = GetVectorDotProduct(velocity, wishdir);
+
 		if(currentgain < 30.0)
 		{
 			gaincoeff = (wishspd - FloatAbs(currentgain)) / wishspd;
 		}
+
 		if(g_bTouchesWall[client] && gaincoeff > 0.5)
 		{
 			gaincoeff -= 1;
@@ -360,12 +377,14 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			g_iTicksOnGround[client] = 0;
 		}
 	}
+
 	else 
 	{
 		if(GetEntityMoveType(client) != MOVETYPE_NONE && GetEntityMoveType(client) != MOVETYPE_NOCLIP && GetEntityMoveType(client) != MOVETYPE_LADDER && GetEntProp(client, Prop_Data, "m_nWaterLevel") < 2)
 		{
 			JHUD_Get(client, vel, angles);
 		}
+
 		g_iTicksOnGround[client] = 0;
 	}
 	
@@ -384,42 +403,45 @@ void JHUD_Print(int client, int target)
 	float coeffsum = g_flRawGain[target];
 	coeffsum /= g_strafeTick[target];
 	coeffsum *= 100.0;
-	
 	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
 	
 	char JHUDText[255];
-	
-			//jump # - speed
+	//jump # - speed
 	if(g_iDisplayMode[client] == 0)
 	{
 		if((g_iJump[target] <= 6) || g_iJump[target] == 16)
 		{
 			FormatEx(JHUDText, sizeof(JHUDText), "%i: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
 		}
+
 		else
 		{
 			Format(JHUDText, sizeof(JHUDText), "%.0f%", coeffsum);
 		}
 	}
-			//jump# - gain %
+
+	//jump# - gain %
 	else if(g_iDisplayMode[client] == 1)
 	{
 		if((g_iJump[target] == 1) || g_iJump[target] == 16)
 		{
 			FormatEx(JHUDText, sizeof(JHUDText), "%i: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
 		}
+
 		else
 		{
 			Format(JHUDText, sizeof(JHUDText), "%i: %.0f%", g_iJump[target], coeffsum);
 		}
 	}
-			//jump # - ssj - gain % 
+
+	//jump # - ssj - gain % 
 	else if(g_iDisplayMode[client] == 2)
 	{
 		if(g_iJump[target] == 1)
 		{
 			FormatEx(JHUDText, sizeof(JHUDText), "Jump %i | PreSpeed %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
 		}
+
 		else
 		{
 			FormatEx(JHUDText, sizeof(JHUDText), "Jump %i | Gain\n%i | %0.f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum);
@@ -427,8 +449,6 @@ void JHUD_Print(int client, int target)
 	}
 	
 	int newvelocity = RoundToFloor(GetVectorLength(velocity));
-	
-	// get the text color
 	int r, g, b;
 	
 	if(g_bDefaultColour[client])
@@ -437,25 +457,27 @@ void JHUD_Print(int client, int target)
 		{
 			GetSpeedColour(g_iJump[target], newvelocity, r, g, b);
 		}
+
 		else
 		{
 			GetGainColour(coeffsum, r, g, b);
 		}
 	}
+
 	else if(g_bSpeedColour[client])
 	{
 		//Use speed as colour
 		GetSpeedColour(g_iJump[target], newvelocity, r, g, b);
 	}
+
 	else if(g_bGainColour[client])
 	{
-	
 		//Use gain as colour
-	
 		if(g_iJump[target] == 1)
 		{
 			GetSpeedColour(g_iJump[target], newvelocity, r, g, b);
 		}
+
 		else
 		{
 			GetGainColour(coeffsum, r, g, b);
@@ -478,18 +500,21 @@ void GetGainColour(float gain, int &r, int &g, int &b)
 		g = 0;		//red
 		b = 0;
 	}
+
 	else if(60.00 <= gain < 70.00)
 	{
 		r = 255;
 		g = 126;	//orange
 		b = 0;
 	}
+
 	else if(70.00 <= gain < 80.00)
 	{
 		r = 0;
 		g = 255;	//green
 		b = 0;
 	}
+
 	else
 	{
 		r = 0;
@@ -506,18 +531,21 @@ void GetSpeedColour(int jump, int speed, int &r, int &g, int &b)
 		g = 126; //orange
 		b = 0;
 	}
+
 	else if((jump == 1 && 282 <= speed < 287) || (jump == 2 && 370 <= speed < 375) || (jump == 3 && 442 <= speed < 450) || (jump == 4 && 505 <= speed < 515) || (jump == 5 && 560 <= speed < 570) || (jump == 6 && 610 <= speed < 620) || (jump == 16 && 980 <= speed < 1000))
 	{
 		r = 0;
 		g = 255; //green
 		b = 0;
 	}
+
 	else if((jump == 1 && speed >= 287) || (jump == 2 && speed >= 375) || (jump == 3 && speed >= 450) || (jump == 4 && speed >= 515) || (jump == 5 && speed >= 570) || (jump == 6 && speed >= 620) || (jump == 16 && speed >= 1000))
 	{
 		r = 0;
 		g = 255; //blue
 		b = 255;
 	}
+
 	else
 	{
 		r = 255;
@@ -539,7 +567,6 @@ stock void SetCookie(int client, Handle hCookie, int n)
 	char strCookie[64];
 	
 	IntToString(n, strCookie, sizeof(strCookie));
-
 	SetClientCookie(client, hCookie, strCookie);
 }
 
