@@ -45,13 +45,13 @@ public Plugin myinfo =
 
 public void OnAllPluginsLoaded()
 {
-
 	HookEvent("player_jump", OnPlayerJump);
 }
 
 public void OnPluginStart()
 {	
 	g_Game = GetEngineVersion();
+	
 	if(g_Game != Engine_CSGO && g_Game != Engine_CSS)
 	{
 		SetFailState("This plugin is for CSGO/CSS only.");	
@@ -80,7 +80,6 @@ public void OnPluginStart()
 public void OnClientCookiesCached(int client)
 {	
 	char sCookie[4];
-	
 	GetClientCookie(client, g_hCookieDefault, sCookie, sizeof(sCookie));
 	
 	if(StringToInt(sCookie) == 0)
