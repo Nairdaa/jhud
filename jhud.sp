@@ -399,11 +399,17 @@ void JHUD_Print(int client, int target)
 	GetEntPropVector(target, Prop_Data, "m_vecAbsVelocity", velocity);
 	GetClientAbsOrigin(target, origin);
 	velocity[2] = 0.0;
-	
+
 	float coeffsum = g_flRawGain[target];
 	coeffsum /= g_strafeTick[target];
 	coeffsum *= 100.0;
 	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+
+	// lame fix to the fucking shit -8239742482% perf on a jump. This needs fixing for sure.
+	if(g_iTicksOnGround[client] >= 15)
+	{
+		coeffsum = 0.0;
+	}
 	
 	char JHUDText[255];
 	//jump # - speed
@@ -444,7 +450,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "Jump %i | Gain\n%i | %0.f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum);
+			FormatEx(JHUDText, sizeof(JHUDText), "Jump %i | Gain\n%i | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum);
 		}
 	}
 	
