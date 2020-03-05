@@ -405,7 +405,7 @@ void JHUD_Print(int client, int target)
 	coeffsum *= 100.0;
 	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
 
-	// lame fix to the fucking shit -8239742482% perf on a jump. This needs fixing for sure.
+	// lame fix to the fucking shit -8239742482% gain on a jump. This needs fixing for sure.
 	if(g_iTicksOnGround[client] >= 15)
 	{
 		coeffsum = 0.0;
