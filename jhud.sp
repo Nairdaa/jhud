@@ -9,7 +9,7 @@
 #pragma newdecls required
 
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Fixed by Nairda tho."
-#define PLUGIN_VERSION "1.2b"
+#define PLUGIN_VERSION "1.2c"
 #define BHOP_TIME 15
 
 EngineVersion g_Game;
@@ -406,7 +406,7 @@ void JHUD_Print(int client, int target)
 	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
 
 	// lame fix to the fucking shit -8239742482% gain on a jump. This needs fixing for sure.
-	if(g_iTicksOnGround[client] >= 15)
+	if(g_iTicksOnGround[client] & BHOP_TIME)
 	{
 		coeffsum = 0.0;
 	}
