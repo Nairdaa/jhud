@@ -9,7 +9,7 @@
 #pragma newdecls required
 
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Fixed by Nairda tho."
-#define PLUGIN_VERSION "1.2c"
+#define PLUGIN_VERSION "1.3"
 #define BHOP_TIME 15
 
 EngineVersion g_Game;
@@ -139,30 +139,14 @@ void JhudMenu(int client)
 	panel.SetTitle("Jhud Menu");
 	panel.DrawText(" ");
 	
-	FormatEx(sBuffer, sizeof(sBuffer), "Jhud - [%s]", (g_bEnabled[client]) ? "x" : " ");
+	FormatEx(sBuffer, sizeof(sBuffer), "Jhud - [%s]", (g_bEnabled[client]) ? "Enabled" : "Disabled");
 
 	panel.DrawItem(sBuffer);
 	panel.DrawText(" ");
 	
-	//Display Mode preview
-	if(g_iDisplayMode[client] == 0)
-	{
-		FormatEx(sBuffer, sizeof(sBuffer), "jump: ssj");
-	}
 
-	else if(g_iDisplayMode[client] == 1)
-	{
-		FormatEx(sBuffer, sizeof(sBuffer), "jump: gain %");
-	}
-
-	else if(g_iDisplayMode[client] == 2)
-	{
-		FormatEx(sBuffer, sizeof(sBuffer), "jump: ssj - gain %");
-	}
-
-	panel.DrawText(sBuffer);
 	
-	FormatEx(sBuffer, sizeof(sBuffer), "%s", g_iDisplayMode[client] == 0 ? "Mode: default" : (g_iDisplayMode[client] == 1 ? "Mode: gain" : "Mode: vel-gain"));
+	FormatEx(sBuffer, sizeof(sBuffer), "%s", g_iDisplayMode[client] == 0 ? "Mode: SSJ Only" : g_iDisplayMode[client] == 1 ? "Mode: SSJ | Gain" : "Mode: SSJ | Gain | Sync");
 	panel.DrawItem(sBuffer);
 	
 	panel.DrawText(" ");
@@ -412,45 +396,45 @@ void JHUD_Print(int client, int target)
 	}
 	
 	char JHUDText[255];
-	//jump # - speed
+	// SSJ Only
 	if(g_iDisplayMode[client] == 0)
 	{
-		if((g_iJump[target] <= 6) || g_iJump[target] == 16)
+		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "%i: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
 		}
-
+		
 		else
 		{
-			Format(JHUDText, sizeof(JHUDText), "%.0f%", coeffsum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nSpd: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
 		}
 	}
 
-	//jump# - gain %
+	// SSJ, Gain%
 	else if(g_iDisplayMode[client] == 1)
 	{
-		if((g_iJump[target] == 1) || g_iJump[target] == 16)
+		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "%i: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
 		}
 
 		else
 		{
-			Format(JHUDText, sizeof(JHUDText), "%i: %.0f%", g_iJump[target], coeffsum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn\n%i | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum);
 		}
 	}
 
-	//jump # - ssj - gain % 
+	// SSJ, Gain%, Sync%
 	else if(g_iDisplayMode[client] == 2)
 	{
 		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "Jump %i | PreSpeed %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | PreSpeed %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
 		}
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "Jump %i | Gain\n%i | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn | Snc\n%i | %.0f%%%%%%% | Soon", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum); // Pawn stuff I guess XDDDDD
 		}
 	}
 	
