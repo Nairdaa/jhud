@@ -303,14 +303,14 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 	g_iSyncedTick[client] = 0;
 }
 
-void JHUD_Get(int client, float vel[3], float angles[3])
+void GetClientStates(int client, float vel[3], float angles[3])
 {
 	float velocity[3];
 	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", velocity);
 	
-	float gaincoeff;
 	g_iStrafeTick[client]++;
 
+	float gaincoeff;
 	float fore[3], side[3], wishvel[3], wishdir[3];
 	float wishspeed, wishspd, CurrentGain;
 
@@ -369,7 +369,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		g_iTicksOnGround[client]++;
 		if(buttons & IN_JUMP && (g_iTicksOnGround[client] & BHOP_TIME))
 		{
-			JHUD_Get(client, vel, angles);
+			GetClientStates(client, vel, angles);
 			g_iTicksOnGround[client] = 0;
 		}
 	}
@@ -378,7 +378,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	{
 		if(GetEntityMoveType(client) != MOVETYPE_NONE && GetEntityMoveType(client) != MOVETYPE_NOCLIP && GetEntityMoveType(client) != MOVETYPE_LADDER && GetEntProp(client, Prop_Data, "m_nWaterLevel") < 2)
 		{
-			JHUD_Get(client, vel, angles);
+			GetClientStates(client, vel, angles);
 		}
 
 		g_iTicksOnGround[client] = 0;
