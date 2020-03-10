@@ -9,7 +9,7 @@
 #pragma newdecls required
 
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Fixed by Nairda tho."
-#define PLUGIN_VERSION "1.3"
+#define PLUGIN_VERSION "1.3.1"
 #define BHOP_TIME 15
 
 EngineVersion g_Game;
@@ -23,7 +23,8 @@ Handle g_hCookieDefaultColour;
 Handle hText;
 
 int g_iJump[MAXPLAYERS +1];
-int g_strafeTick[MAXPLAYERS +1];
+int g_iStrafeTick[MAXPLAYERS +1];
+int g_iSyncedTick[MAXPLAYERS+1];
 int g_iDisplayMode[MAXPLAYERS + 1];
 int g_iTicksOnGround[MAXPLAYERS + 1]; // Let's count the ticks for scroll
 
@@ -57,7 +58,7 @@ public void OnPluginStart()
 		SetFailState("This plugin is for CSGO/CSS only.");	
 	}
 	
-	RegConsoleCmd("sm_jhud", SM_JHUD, "opens Jhud");
+	RegConsoleCmd("sm_jhud", JumpHudMenuCommand, "A command to open the menu");
 	g_hCookieEnabled = RegClientCookie("jhud_enabled", "jhud_enabled", CookieAccess_Public);
 	g_hCookieSpeed = RegClientCookie("speed_enabled", "speed_enabled", CookieAccess_Public);
 	g_hCookieGain = RegClientCookie("gain_enabled", "gain_enabled", CookieAccess_Public);
@@ -96,17 +97,21 @@ public void OnClientCookiesCached(int client)
 	g_bSpeedColour[client] = GetCookie(client, g_hCookieSpeed);
 	g_bGainColour[client] = GetCookie(client, g_hCookieGain);
 	g_bDefaultColour[client] = GetCookie(client, g_hCookieDefaultColour);
+
 	GetClientCookie(client, g_hCookieDisplayMode, sCookie, sizeof(sCookie));
+
 	g_iDisplayMode[client] = StringToInt(sCookie);
 }
 
 public void OnClientPutInServer(int client)
 {
 	g_iJump[client] = 0; 
-	g_strafeTick[client] = 0;
+	g_iStrafeTick[client] = 0;
+	g_iSyncedTick[client] = 0;
 	g_flRawGain[client] = 0.0;
 	g_iTicksOnGround[client] = 0;
-	SDKHook(client, SDKHook_Touch, onTouch);
+
+	SDKHook(client, SDKHook_Touch, TouchingWall);
 }
 
 public void OnClientDisconnect(int client)
@@ -116,30 +121,31 @@ public void OnClientDisconnect(int client)
 	g_bGainColour[client] = false;
 }
 
-public Action SM_JHUD(int client, int args)
+public Action JumpHudMenuCommand(int client, int args)
 {
 	if(client == 0)
 	{
-		ReplyToCommand(client, "[SM] This command can only used ingame");
+		ReplyToCommand(client, "The fuck are you trying to do? Get in game and use the command there instead.");
 		return Plugin_Handled;
 	}
 
 	else
 	{
-		JhudMenu(client);
+		JumpHudMenu(client);
 	}
+	
 	return Plugin_Handled;
 }
 
-void JhudMenu(int client)
+void JumpHudMenu(int client)
 {
 	char sBuffer[128];
 	Panel panel = CreatePanel(); // panel cuz menu has no drawtext, and preview with numbers? hell na
 	
-	panel.SetTitle("Jhud Menu");
+	panel.SetTitle("Jump Hud Menu");
 	panel.DrawText(" ");
 	
-	FormatEx(sBuffer, sizeof(sBuffer), "Jhud - [%s]", (g_bEnabled[client]) ? "Enabled" : "Disabled");
+	FormatEx(sBuffer, sizeof(sBuffer), "Enabled [%s]", (g_bEnabled[client]) ? "x" : " ");
 
 	panel.DrawItem(sBuffer);
 	panel.DrawText(" ");
@@ -165,12 +171,12 @@ void JhudMenu(int client)
 	panel.CurrentKey = 10;
 	panel.DrawItem("Exit                          ", ITEMDRAW_CONTROL);
 	
-	panel.Send(client, menu_Jhud, 0);
+	panel.Send(client, JumpHundMenuHandler, 0);
 	
 	CloseHandle(panel);
 }
 
-public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
+public int JumpHundMenuHandler(Handle menu, MenuAction action, int client, int item)
 {
 	switch (action)
 	{
@@ -178,20 +184,22 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 		{
 			switch (item)
 			{
-				case 1: //Jhud on/off
+				case 1: // jhud on/off
 				{
 					g_bEnabled[client] = !g_bEnabled[client];
 					SetCookie(client, g_hCookieEnabled, g_bEnabled[client]);
-					JhudMenu(client);
+					JumpHudMenu(client);
 				}
 
-				case 2: //switch modes
+				case 2: // switch modes
 				{
 					g_iDisplayMode[client] = (g_iDisplayMode[client] + 1) % 3;
 					SetCookie(client, g_hCookieDisplayMode, g_iDisplayMode[client]);
-					JhudMenu(client);
+					JumpHudMenu(client);
 				}
 
+
+				// color selection shit
 				case 3:
 				{
 					if(g_bGainColour[client] || g_bSpeedColour[client])
@@ -206,7 +214,7 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 						
 					}
 
-					JhudMenu(client);
+					JumpHudMenu(client);
 				}
 
 				case 4:
@@ -223,7 +231,7 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 						
 					}
 
-					JhudMenu(client);
+					JumpHudMenu(client);
 				}
 
 				case 5:
@@ -240,14 +248,14 @@ public int menu_Jhud(Handle menu, MenuAction action, int client, int item)
 						
 					}
 
-					JhudMenu(client);
+					JumpHudMenu(client);
 				}
 			}
 		}
 	}
 }
 
-public Action onTouch(int client, int entity)
+public Action TouchingWall(int client, int entity)
 {
 	/* https://github.com/ValveSoftware/source-sdk-2013/blob/master/sp/src/public/engine/ICollideable.h
 		SOLID_NONE = 0, // no solid model
@@ -275,7 +283,7 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 		return;
 	}
 
-	if(g_iJump[client] && g_strafeTick[client] <= 0)
+	if(g_iJump[client] && g_iStrafeTick[client] <= 0)
 	{
 		return;
 	}
@@ -291,7 +299,8 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 	}
 
 	g_flRawGain[client] = 0.0;
-	g_strafeTick[client] = 0;
+	g_iStrafeTick[client] = 0;
+	g_iSyncedTick[client] = 0;
 }
 
 void JHUD_Get(int client, float vel[3], float angles[3])
@@ -300,14 +309,13 @@ void JHUD_Get(int client, float vel[3], float angles[3])
 	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", velocity);
 	
 	float gaincoeff;
-	g_strafeTick[client]++;
-	
-	
+	g_iStrafeTick[client]++;
+
 	float fore[3], side[3], wishvel[3], wishdir[3];
-	float wishspeed, wishspd, currentgain;
-	
+	float wishspeed, wishspd, CurrentGain;
+
 	GetAngleVectors(angles, fore, side, NULL_VECTOR);
-	
+
 	fore[2] = 0.0;
 	side[2] = 0.0;
 	NormalizeVector(fore, fore);
@@ -315,28 +323,30 @@ void JHUD_Get(int client, float vel[3], float angles[3])
 	
 	for (int i = 0; i < 2; i++)
 		wishvel[i] = fore[i] * vel[0] + side[i] * vel[1];
-	
+
 	wishspeed = NormalizeVector(wishvel, wishdir);
 	if(wishspeed > GetEntPropFloat(client, Prop_Send, "m_flMaxspeed") && GetEntPropFloat(client, Prop_Send, "m_flMaxspeed") != 0.0)
 	{
 		wishspeed = GetEntPropFloat(client, Prop_Send, "m_flMaxspeed");
 	}
-	
+
 	if(wishspeed)
 	{
 		wishspd = (wishspeed > 30.0) ? 30.0 : wishspeed;
-		currentgain = GetVectorDotProduct(velocity, wishdir);
+		CurrentGain = GetVectorDotProduct(velocity, wishdir);
 
-		if(currentgain < 30.0)
+		if(CurrentGain < 30.0)
 		{
-			gaincoeff = (wishspd - FloatAbs(currentgain)) / wishspd;
+			g_iSyncedTick[client]++;
+			gaincoeff = (wishspd - FloatAbs(CurrentGain)) / wishspd;
 		}
 
 		if(g_bTouchesWall[client] && gaincoeff > 0.5)
 		{
-			gaincoeff -= 1;
+			gaincoeff -= 1.0;
 			gaincoeff = FloatAbs(gaincoeff);
 		}
+
 		g_flRawGain[client] += gaincoeff;
 	}
 }
@@ -345,17 +355,19 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 {	
 	if(IsFakeClient(client)) 
 		return Plugin_Continue;
-	
+
 	if(GetEntityFlags(client) & FL_ONGROUND)
 	{
 		if(g_iTicksOnGround[client] & BHOP_TIME)
 		{
 			g_iJump[client] = 0;
-			g_strafeTick[client] = 0;
+			g_iStrafeTick[client] = 0;
 			g_flRawGain[client] = 0.0;
+			g_iSyncedTick[client] = 0;
 		}
+
 		g_iTicksOnGround[client]++;
-		if(buttons & IN_JUMP && (g_iTicksOnGround[client] <= 15))
+		if(buttons & IN_JUMP && (g_iTicksOnGround[client] & BHOP_TIME))
 		{
 			JHUD_Get(client, vel, angles);
 			g_iTicksOnGround[client] = 0;
@@ -371,7 +383,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 		g_iTicksOnGround[client] = 0;
 	}
-	
+
 	g_bTouchesWall[client] = false;
 
 	return Plugin_Continue;
@@ -385,7 +397,7 @@ void JHUD_Print(int client, int target)
 	velocity[2] = 0.0;
 
 	float coeffsum = g_flRawGain[target];
-	coeffsum /= g_strafeTick[target];
+	coeffsum /= g_iStrafeTick[target];
 	coeffsum *= 100.0;
 	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
 
@@ -434,7 +446,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn | Snc\n%i | %.0f%%%%%%% | Soon", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum); // Pawn stuff I guess XDDDDD
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn | Snc\n%i | %.0f%%%%%%% | %.2f%%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]); // Pawn stuff I guess XDDDDD
 		}
 	}
 	
