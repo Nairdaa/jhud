@@ -171,12 +171,12 @@ void JumpHudMenu(int client)
 	panel.CurrentKey = 10;
 	panel.DrawItem("Exit                          ", ITEMDRAW_CONTROL);
 	
-	panel.Send(client, JumpHundMenuHandler, 0);
+	panel.Send(client, JumpHudMenuHandler, 0);
 	
 	CloseHandle(panel);
 }
 
-public int JumpHundMenuHandler(Handle menu, MenuAction action, int client, int item)
+public int JumpHudMenuHandler(Handle menu, MenuAction action, int client, int item)
 {
 	switch (action)
 	{
