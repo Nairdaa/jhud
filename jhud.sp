@@ -9,7 +9,7 @@
 #pragma newdecls required
 
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Fixed by Nairda tho."
-#define PLUGIN_VERSION "1.3.1"
+#define PLUGIN_VERSION "1.3.2"
 #define BHOP_TIME 15
 
 EngineVersion g_Game;
@@ -396,15 +396,15 @@ void JHUD_Print(int client, int target)
 	GetClientAbsOrigin(target, origin);
 	velocity[2] = 0.0;
 
-	float coeffsum = g_flRawGain[target];
-	coeffsum /= g_iStrafeTick[target];
-	coeffsum *= 100.0;
-	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+	float f_CoefficientSum = g_flRawGain[target];
+	f_CoefficientSum /= g_iStrafeTick[target];
+	f_CoefficientSum *= 100.0;
+	f_CoefficientSum = RoundToFloor(f_CoefficientSum * 100.0 + 0.5) / 100.0;
 
-	// lame fix to the fucking shit -8239742482% gain on a jump. This needs fixing for sure.
+	// lame fix to the fucking shit -8239742482% gain on a jump. This needs fixing for sure. I think (?).
 	if(g_iTicksOnGround[client] & BHOP_TIME)
 	{
-		coeffsum = 0.0;
+		f_CoefficientSum = 0.0;
 	}
 	
 	char JHUDText[255];
@@ -432,7 +432,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn\n%i | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn\n%i | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), f_CoefficientSum);
 		}
 	}
 
@@ -446,7 +446,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn | Snc\n%i | %.0f%%%%%%% | %.2f%%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), coeffsum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]); // Pawn stuff I guess XDDDDD
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i | %05.2f%%%%%%% | %05.2f%%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]); // Pawn stuff I guess XDDDDD
 		}
 	}
 	
@@ -462,7 +462,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			GetGainColour(coeffsum, r, g, b);
+			GetGainColour(f_CoefficientSum, r, g, b);
 		}
 	}
 
@@ -482,7 +482,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			GetGainColour(coeffsum, r, g, b);
+			GetGainColour(f_CoefficientSum, r, g, b);
 		}
 	}
 	
