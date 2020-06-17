@@ -446,7 +446,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i | %05.2f%%%%%%% | %05.2f%%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]); // Pawn stuff I guess XDDDDD
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]); // Pawn stuff I guess XDDDDD
 		}
 	}
 	
