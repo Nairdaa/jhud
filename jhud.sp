@@ -38,7 +38,7 @@ bool g_bGainColour[MAXPLAYERS + 1] = false;
 bool g_bDefaultColour[MAXPLAYERS + 1] = true;
 
 float g_flRawGain[MAXPLAYERS +1];
-float g_vecLastAngle[MAXPLAYERS + 1][3];
+float g_flVecLastAngle[MAXPLAYERS + 1][3];
 float g_fTotalNormalDelta[MAXPLAYERS + 1];
 float g_fTotalPerfectDelta[MAXPLAYERS + 1];
 
@@ -378,7 +378,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		return Plugin_Continue;
 	}
 
-	float yaw = NormalizeAngle(angles[1] - g_vecLastAngle[client][1]);
+	float yaw = NormalizeAngle(angles[1] - g_flVecLastAngle[client][1]);
 		
 	float g_vecAbsVelocity[3];
 	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_vecAbsVelocity);
@@ -420,7 +420,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	}
 
 	g_bTouchesWall[client] = false;
-	g_vecLastAngle[client] = angles;
+	g_flVecLastAngle[client] = angles;
 
 	return Plugin_Continue;
 }
