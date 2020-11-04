@@ -380,9 +380,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	float yaw = NormalizeAngle(angles[1] - g_flVecLastAngle[client][1]);
 		
-	float g_vecAbsVelocity[3];
-	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_vecAbsVelocity);
-	float velocity = GetVectorLength(g_vecAbsVelocity);
+	float g_flVecAbsVelocity[3];
+	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_flVecAbsVelocity);
+	float velocity = GetVectorLength(g_flVecAbsVelocity);
 
 	float wish_angle = FloatAbs(ArcSine(30.0 / velocity)) * 180 / M_PI;
 
