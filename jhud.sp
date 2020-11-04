@@ -306,13 +306,13 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 		return;
 	}
 
-	g_iJump[client] = Shavit_GetClientJumps(client); 
+	g_iJump[client] = Shavit_GetClientJumps(client);
 
 	for (int iClient = 1; iClient <= MaxClients; iClient++)
 	{
 		if(IsClientInGame(iClient) && !IsFakeClient(iClient) && ((!IsPlayerAlive(iClient) && GetEntPropEnt(iClient, Prop_Data, "m_hObserverTarget") == client && GetEntProp(iClient, Prop_Data, "m_iObserverMode") != 7 && g_bEnabled[iClient]) || (iClient == client && g_bEnabled[iClient])))
 		{
-			JHUD_Print(iClient, client);
+			JumpHudPrint(iClient, client);
 		}
 	}
 
@@ -425,21 +425,21 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	return Plugin_Continue;
 }
 
-stock float NormalizeAngle(float ang)
+stock float NormalizeAngle(float angle)
 {
-	if (ang > 180.0)
+	if (angle > 180.0)
 	{
-		ang -= 360.0;
+		angle -= 360.0;
 	}
-	else if (ang < -180.0)
+	else if (angle < -180.0)
 	{
-		ang += 360.0;
+		angle += 360.0;
 	}
 	
-	return ang;
+	return angle;
 }
 
-void JHUD_Print(int client, int target)
+void JumpHudPrint(int client, int target)
 {	
 	float fTotalPercent = ((g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target]) * 100.0);
 
@@ -502,14 +502,14 @@ void JHUD_Print(int client, int target)
 		}
 	}
 	
-	int newvelocity = RoundToFloor(GetVectorLength(fVelocity));
+	int iNewVelocity = RoundToFloor(GetVectorLength(fVelocity));
 	int r, g, b;
 	
 	if(g_bDefaultColour[client])
 	{
 		if(g_iJump[target] <= 6 || g_iJump[target] == 16)
 		{
-			GetSpeedColour(g_iJump[target], newvelocity, r, g, b);
+			GetSpeedColour(g_iJump[target], iNewVelocity, r, g, b);
 		}
 
 		else
@@ -521,7 +521,7 @@ void JHUD_Print(int client, int target)
 	else if(g_bSpeedColour[client])
 	{
 		//Use speed as colour
-		GetSpeedColour(g_iJump[target], newvelocity, r, g, b);
+		GetSpeedColour(g_iJump[target], iNewVelocity, r, g, b);
 	}
 
 	else if(g_bGainColour[client])
@@ -529,7 +529,7 @@ void JHUD_Print(int client, int target)
 		//Use gain as colour
 		if(g_iJump[target] == 1)
 		{
-			GetSpeedColour(g_iJump[target], newvelocity, r, g, b);
+			GetSpeedColour(g_iJump[target], iNewVelocity, r, g, b);
 		}
 
 		else
