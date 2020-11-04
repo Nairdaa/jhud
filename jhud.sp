@@ -9,14 +9,16 @@
 #pragma newdecls required
 
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Deshitified, improved and fixed by Nairda."
-#define PLUGIN_VERSION "1.3.2a"
+#define PLUGIN_VERSION "1.3.3"
 #define BHOP_TIME 15
+#define M_PI 3.14159265358979323846264338327950288
 
 EngineVersion g_Game;
 
 Handle g_hCookieEnabled;
 Handle g_hCookieSpeed;
 Handle g_hCookieGain;
+Handle g_hCookieStrafeSpeed;
 Handle g_hCookieDisplayMode;
 Handle g_hCookieDefault;
 Handle g_hCookieDefaultColour;
@@ -29,12 +31,16 @@ int g_iDisplayMode[MAXPLAYERS + 1];
 int g_iTicksOnGround[MAXPLAYERS + 1]; // Let's count the ticks for scroll
 
 bool g_bEnabled[MAXPLAYERS +1];
+bool g_bStrafeSpeed[MAXPLAYERS+1];
 bool g_bTouchesWall[MAXPLAYERS +1];
 bool g_bSpeedColour[MAXPLAYERS + 1] = false;
 bool g_bGainColour[MAXPLAYERS + 1] = false;
 bool g_bDefaultColour[MAXPLAYERS + 1] = true;
 
 float g_flRawGain[MAXPLAYERS +1];
+float g_vecLastAngle[MAXPLAYERS + 1][3];
+float g_fTotalNormalDelta[MAXPLAYERS + 1];
+float g_fTotalPerfectDelta[MAXPLAYERS + 1];
 
 public Plugin myinfo = 
 {
@@ -62,6 +68,7 @@ public void OnPluginStart()
 	g_hCookieEnabled = RegClientCookie("jhud_enabled", "jhud_enabled", CookieAccess_Public);
 	g_hCookieSpeed = RegClientCookie("speed_enabled", "speed_enabled", CookieAccess_Public);
 	g_hCookieGain = RegClientCookie("gain_enabled", "gain_enabled", CookieAccess_Public);
+	g_hCookieStrafeSpeed = RegClientCookie("jhud_strafespeed", "jhud_strafespeed", CookieAccess_Public);
 	g_hCookieDisplayMode = RegClientCookie("usagemode", "usagemode", CookieAccess_Public);
 	g_hCookieDefault = RegClientCookie("jhud_default", "jhud_default", CookieAccess_Public);
 	g_hCookieDefaultColour = RegClientCookie("colour_default", "colour_default", CookieAccess_Public);
@@ -88,6 +95,7 @@ public void OnClientCookiesCached(int client)
 		SetCookie(client, g_hCookieEnabled, false);
 		SetCookie(client, g_hCookieSpeed, false);
 		SetCookie(client, g_hCookieGain, false);
+		SetCookie(client, g_hCookieStrafeSpeed, false);
 		SetCookie(client, g_hCookieDisplayMode, 0);
 		SetCookie(client, g_hCookieDefaultColour, true);
 		SetCookie(client, g_hCookieDefault, true);
@@ -96,7 +104,9 @@ public void OnClientCookiesCached(int client)
 	g_bEnabled[client] = GetCookie(client, g_hCookieEnabled);
 	g_bSpeedColour[client] = GetCookie(client, g_hCookieSpeed);
 	g_bGainColour[client] = GetCookie(client, g_hCookieGain);
+	g_bGainColour[client] = GetCookie(client, g_hCookieGain);
 	g_bDefaultColour[client] = GetCookie(client, g_hCookieDefaultColour);
+	g_bStrafeSpeed[client] = GetCookie(client, g_hCookieStrafeSpeed);
 
 	GetClientCookie(client, g_hCookieDisplayMode, sCookie, sizeof(sCookie));
 
@@ -301,6 +311,8 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 	g_flRawGain[client] = 0.0;
 	g_iStrafeTick[client] = 0;
 	g_iSyncedTick[client] = 0;
+	g_fTotalNormalDelta[client] = 0.0;
+	g_fTotalPerfectDelta[client] = 0.0;
 }
 
 void GetClientStates(int client, float vel[3], float angles[3])
@@ -353,8 +365,18 @@ void GetClientStates(int client, float vel[3], float angles[3])
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {	
-	if(IsFakeClient(client)) 
+	if(IsFakeClient(client))
+	{
 		return Plugin_Continue;
+	}
+
+	float yaw = NormalizeAngle(angles[1] - g_vecLastAngle[client][1]);
+		
+	float g_vecAbsVelocity[3];
+	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_vecAbsVelocity);
+	float velocity = GetVectorLength(g_vecAbsVelocity);
+
+	float wish_angle = FloatAbs(ArcSine(30.0 / velocity)) * 180 / M_PI;
 
 	if(GetEntityFlags(client) & FL_ONGROUND)
 	{
@@ -364,9 +386,11 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			g_iStrafeTick[client] = 0;
 			g_flRawGain[client] = 0.0;
 			g_iSyncedTick[client] = 0;
+			g_fTotalNormalDelta[client] = 0.0;
+			g_fTotalPerfectDelta[client] = 0.0;
 		}
-
 		g_iTicksOnGround[client]++;
+
 		if(buttons & IN_JUMP && (g_iTicksOnGround[client] & BHOP_TIME))
 		{
 			GetClientStates(client, vel, angles);
@@ -376,6 +400,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	else 
 	{
+		g_fTotalNormalDelta[client] += FloatAbs(yaw);
+		g_fTotalPerfectDelta[client] += wish_angle;
+
 		if(GetEntityMoveType(client) != MOVETYPE_NONE && GetEntityMoveType(client) != MOVETYPE_NOCLIP && GetEntityMoveType(client) != MOVETYPE_LADDER && GetEntProp(client, Prop_Data, "m_nWaterLevel") < 2)
 		{
 			GetClientStates(client, vel, angles);
@@ -385,12 +412,29 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	}
 
 	g_bTouchesWall[client] = false;
+	g_vecLastAngle[client] = angles;
 
 	return Plugin_Continue;
 }
 
+stock float NormalizeAngle(float ang)
+{
+	if (ang > 180.0)
+	{
+		ang -= 360.0;
+	}
+	else if (ang < -180.0)
+	{
+		ang += 360.0;
+	}
+	
+	return ang;
+}
+
 void JHUD_Print(int client, int target)
 {	
+	float totalPercent = ((g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target]) * 100.0);
+
 	float velocity[3], origin[3];
 	GetEntPropVector(target, Prop_Data, "m_vecAbsVelocity", velocity);
 	GetClientAbsOrigin(target, origin);
@@ -418,7 +462,7 @@ void JHUD_Print(int client, int target)
 		
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nSpd: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nV: %i (%.0f%%%%)", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), totalPercent);
 		}
 	}
 
@@ -432,7 +476,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gn\n%i | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), f_CoefficientSum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), totalPercent, f_CoefficientSum);
 		}
 	}
 
@@ -446,7 +490,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), totalPercent, f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		}
 	}
 	
