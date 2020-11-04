@@ -149,6 +149,8 @@ public Action JumpHudMenuCommand(int client, int args)
 
 void JumpHudMenu(int client)
 {
+	// Gonna fucking rework this shit menu Soon™
+	
 	char sBuffer[128];
 	Panel panel = CreatePanel(); // panel cuz menu has no drawtext, and preview with numbers? hell na
 	
@@ -159,8 +161,6 @@ void JumpHudMenu(int client)
 
 	panel.DrawItem(sBuffer);
 	panel.DrawText(" ");
-	
-
 	
 	FormatEx(sBuffer, sizeof(sBuffer), "%s", g_iDisplayMode[client] == 0 ? "Mode: SSJ Only" : g_iDisplayMode[client] == 1 ? "Mode: SSJ | Gain" : "Mode: SSJ | Gain | Sync");
 	panel.DrawItem(sBuffer);
@@ -178,8 +178,16 @@ void JumpHudMenu(int client)
 	
 	panel.DrawItem("", ITEMDRAW_SPACER);
 
-	panel.CurrentKey = 10;
-	panel.DrawItem("Exit                          ", ITEMDRAW_CONTROL);
+	if(g_Game != Engine_CSGO)
+	{
+		panel.CurrentKey = 10;
+	}
+	else
+	{
+		panel.CurrentKey = 9;
+	}
+
+	panel.DrawItem("Exit  lol                        ", ITEMDRAW_CONTROL);
 	
 	panel.Send(client, JumpHudMenuHandler, 0);
 	
