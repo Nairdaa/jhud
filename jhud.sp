@@ -448,15 +448,15 @@ void JHUD_Print(int client, int target)
 	GetClientAbsOrigin(target, origin);
 	velocity[2] = 0.0;
 
-	float f_CoefficientSum = g_flRawGain[target];
-	f_CoefficientSum /= g_iStrafeTick[target];
-	f_CoefficientSum *= 100.0;
-	f_CoefficientSum = RoundToFloor(f_CoefficientSum * 100.0 + 0.5) / 100.0;
+	float fCoefficientSum = g_flRawGain[target];
+	fCoefficientSum /= g_iStrafeTick[target];
+	fCoefficientSum *= 100.0;
+	fCoefficientSum = RoundToFloor(fCoefficientSum * 100.0 + 0.5) / 100.0;
 
 	// lame fix to the fucking shit -8239742482% gain on a jump. This needs fixing for sure. I think (?).
 	if(g_iTicksOnGround[client] & BHOP_TIME)
 	{
-		f_CoefficientSum = 0.0;
+		fCoefficientSum = 0.0;
 	}
 	
 	char JHUDText[255];
@@ -484,7 +484,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, f_CoefficientSum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, fCoefficientSum);
 		}
 	}
 
@@ -498,7 +498,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, fCoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		}
 	}
 	
@@ -514,7 +514,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			GetGainColour(f_CoefficientSum, r, g, b);
+			GetGainColour(fCoefficientSum, r, g, b);
 		}
 	}
 
@@ -534,7 +534,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			GetGainColour(f_CoefficientSum, r, g, b);
+			GetGainColour(fCoefficientSum, r, g, b);
 		}
 	}
 	
