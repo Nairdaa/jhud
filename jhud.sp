@@ -441,7 +441,7 @@ stock float NormalizeAngle(float ang)
 
 void JHUD_Print(int client, int target)
 {	
-	float totalPercent = ((g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target]) * 100.0);
+	float fTotalPercent = ((g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target]) * 100.0);
 
 	float velocity[3], origin[3];
 	GetEntPropVector(target, Prop_Data, "m_vecAbsVelocity", velocity);
@@ -470,7 +470,7 @@ void JHUD_Print(int client, int target)
 		
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nV: %i (%.0f%%%%)", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), totalPercent);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nV: %i (%.0f%%%%)", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent);
 		}
 	}
 
@@ -484,7 +484,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), totalPercent, f_CoefficientSum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, f_CoefficientSum);
 		}
 	}
 
@@ -498,7 +498,7 @@ void JHUD_Print(int client, int target)
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), totalPercent, f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, f_CoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		}
 	}
 	
