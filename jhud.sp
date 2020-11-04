@@ -325,8 +325,8 @@ public Action OnPlayerJump(Handle event, const char[] name, bool dontBroadcast)
 
 void GetClientStates(int client, float vel[3], float angles[3])
 {
-	float velocity[3];
-	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", velocity);
+	float fVelocity[3];
+	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", fVelocity);
 	
 	g_iStrafeTick[client]++;
 
@@ -353,7 +353,7 @@ void GetClientStates(int client, float vel[3], float angles[3])
 	if(wishspeed)
 	{
 		wishspd = (wishspeed > 30.0) ? 30.0 : wishspeed;
-		CurrentGain = GetVectorDotProduct(velocity, wishdir);
+		CurrentGain = GetVectorDotProduct(fVelocity, wishdir);
 
 		if(CurrentGain < 30.0)
 		{
@@ -382,9 +382,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		
 	float g_flVecAbsVelocity[3];
 	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_flVecAbsVelocity);
-	float velocity = GetVectorLength(g_flVecAbsVelocity);
+	float fVelocity = GetVectorLength(g_flVecAbsVelocity);
 
-	float wish_angle = FloatAbs(ArcSine(30.0 / velocity)) * 180 / M_PI;
+	float wish_angle = FloatAbs(ArcSine(30.0 / fVelocity)) * 180 / M_PI;
 
 	if(GetEntityFlags(client) & FL_ONGROUND)
 	{
@@ -443,10 +443,10 @@ void JHUD_Print(int client, int target)
 {	
 	float fTotalPercent = ((g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target]) * 100.0);
 
-	float velocity[3], origin[3];
-	GetEntPropVector(target, Prop_Data, "m_vecAbsVelocity", velocity);
+	float fVelocity[3], origin[3];
+	GetEntPropVector(target, Prop_Data, "m_vecAbsVelocity", fVelocity);
 	GetClientAbsOrigin(target, origin);
-	velocity[2] = 0.0;
+	fVelocity[2] = 0.0;
 
 	float fCoefficientSum = g_flRawGain[target];
 	fCoefficientSum /= g_iStrafeTick[target];
@@ -465,12 +465,12 @@ void JHUD_Print(int client, int target)
 	{
 		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
 		}
 		
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nV: %i (%.0f%%%%)", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nV: %i (%.0f%%%%)", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent);
 		}
 	}
 
@@ -479,12 +479,12 @@ void JHUD_Print(int client, int target)
 	{
 		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
 		}
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, fCoefficientSum);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent, fCoefficientSum);
 		}
 	}
 
@@ -493,16 +493,16 @@ void JHUD_Print(int client, int target)
 	{
 		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | PreSpeed %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | PreSpeed %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
 		}
 
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fTotalPercent, fCoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
+			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent, fCoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		}
 	}
 	
-	int newvelocity = RoundToFloor(GetVectorLength(velocity));
+	int newvelocity = RoundToFloor(GetVectorLength(fVelocity));
 	int r, g, b;
 	
 	if(g_bDefaultColour[client])
