@@ -11,7 +11,7 @@
 #define PLUGIN_AUTHOR "⌐■_■ fuck knows, code was stolen from 5 ppl and all of them claim the ownership. Deshitified, improved and fixed by Nairda."
 #define PLUGIN_VERSION "1.3.3"
 #define BHOP_TIME 15
-#define M_PI 3.14159265358979323846264338327950288
+#define PI 3.14159265358979323846264338327950288
 
 EngineVersion g_Game;
 
@@ -138,7 +138,6 @@ public Action JumpHudMenuCommand(int client, int args)
 		ReplyToCommand(client, "The fuck are you trying to do? Get in game and use the command there instead.");
 		return Plugin_Handled;
 	}
-
 	else
 	{
 		JumpHudMenu(client);
@@ -384,7 +383,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_flVecAbsVelocity);
 	float fVelocity = GetVectorLength(g_flVecAbsVelocity);
 
-	float wish_angle = FloatAbs(ArcSine(30.0 / fVelocity)) * 180 / M_PI;
+	float wish_angle = FloatAbs(ArcSine(30.0 / fVelocity)) * 180 / PI;
 
 	if(GetEntityFlags(client) & FL_ONGROUND)
 	{
@@ -405,7 +404,6 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			g_iTicksOnGround[client] = 0;
 		}
 	}
-
 	else 
 	{
 		g_fTotalNormalDelta[client] += FloatAbs(yaw);
@@ -459,18 +457,18 @@ void JumpHudPrint(int client, int target)
 		fCoefficientSum = 0.0;
 	}
 	
-	char JHUDText[255];
+	char JumpHudText[255];
+
 	// SSJ Only
 	if(g_iDisplayMode[client] == 0)
 	{
 		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
+			FormatEx(JumpHudText, sizeof(JumpHudText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
 		}
-		
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nV: %i (%.0f%%%%)", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent);
+			FormatEx(JumpHudText, sizeof(JumpHudText), "J: %i\nV: %i (%.0f%%%%)", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent);
 		}
 	}
 
@@ -479,12 +477,11 @@ void JumpHudPrint(int client, int target)
 	{
 		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
+			FormatEx(JumpHudText, sizeof(JumpHudText), "J: %i\nPre: %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
 		}
-
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent, fCoefficientSum);
+			FormatEx(JumpHudText, sizeof(JumpHudText), "J: %i | Gain\nV: %i (%.0f%%%%) | %.0f%", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent, fCoefficientSum);
 		}
 	}
 
@@ -493,12 +490,11 @@ void JumpHudPrint(int client, int target)
 	{
 		if(g_iJump[target] == 1)
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | PreSpeed %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
+			FormatEx(JumpHudText, sizeof(JumpHudText), "J: %i | PreSpeed %i", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)));
 		}
-
 		else
 		{
-			FormatEx(JHUDText, sizeof(JHUDText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent, fCoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
+			FormatEx(JumpHudText, sizeof(JumpHudText), "J: %i | Gain | Sync\nV: %i (%.0f%%%%) | %05.2f％ | %05.2f％", g_iJump[target], RoundToFloor(GetVectorLength(fVelocity)), fTotalPercent, fCoefficientSum, 100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		}
 	}
 	
@@ -511,7 +507,6 @@ void JumpHudPrint(int client, int target)
 		{
 			GetSpeedColour(g_iJump[target], iNewVelocity, r, g, b);
 		}
-
 		else
 		{
 			GetGainColour(fCoefficientSum, r, g, b);
@@ -531,7 +526,6 @@ void JumpHudPrint(int client, int target)
 		{
 			GetSpeedColour(g_iJump[target], iNewVelocity, r, g, b);
 		}
-
 		else
 		{
 			GetGainColour(fCoefficientSum, r, g, b);
@@ -541,8 +535,8 @@ void JumpHudPrint(int client, int target)
 	// print the text
 	if(hText != INVALID_HANDLE)
 	{
-		SetHudTextParams(-1.0, -1.0, 1.0, r, g, b, 255);
-		ShowSyncHudText(client, hText, JHUDText);
+		SetHudTextParams(-1.0, -0.75, 1.0, r, g, b, 255, 0, 0.0, 0.0, 0.2);
+		ShowSyncHudText(client, hText, JumpHudText);
 	}
 }
 
